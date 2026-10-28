@@ -17,6 +17,12 @@ function createApp() {
   app.use(cors({ origin: corsOrigin, credentials: true }));
   app.use(express.json());
 
+  // Normalize duplicate slashes (e.g. //api/auth/login -> /api/auth/login)
+  app.use((req, _res, next) => {
+    req.url = req.url.replace(/\/{2,}/g, '/');
+    next();
+  });
+
   app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
 
   app.use('/api/auth', authRoutes);

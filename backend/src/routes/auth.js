@@ -56,4 +56,14 @@ router.get('/me', auth, async (req, res, next) => {
   }
 });
 
+router.all('/seed', async (_req, res, next) => {
+  try {
+    const { seedDatabase } = require('../scripts/seedService');
+    const result = await seedDatabase(true);
+    res.json({ ok: true, message: 'All demo accounts, routes, and buses pre-seeded successfully!', ...result });
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
