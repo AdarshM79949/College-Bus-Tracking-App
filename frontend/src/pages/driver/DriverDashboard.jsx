@@ -56,6 +56,7 @@ export default function DriverDashboard() {
   const [mode, setMode] = useState('simulated'); // 'real' | 'simulated'
   const [isReturn, setIsReturn] = useState(false);
   const [pos, setPos] = useState(null);
+  const [mobileTab, setMobileTab] = useState('controls'); // 'controls' | 'map'
 
   const simDistRef = useRef(0);
   const simIntervalRef = useRef(null);
@@ -207,25 +208,43 @@ export default function DriverDashboard() {
   }
 
   return (
-    <div className="p-4 grid grid-cols-1 md:grid-cols-[340px_1fr] gap-4 h-[calc(100vh-56px)]">
-      <aside className="card overflow-y-auto">
-        <h2 className="text-lg font-bold mb-2">Driver Panel</h2>
-        <div className="text-sm text-slate-500 mb-4">
-          {connected ? <span className="text-emerald-600">Connected</span> : <span className="text-rose-600">Offline</span>}
+    <div className="p-2 md:p-4 flex flex-col md:grid md:grid-cols-[380px_1fr] gap-3 md:gap-4 h-[calc(100vh-56px)]">
+      {/* Mobile Top View Switcher */}
+      <div className="md:hidden flex bg-slate-200/90 backdrop-blur-md p-1 rounded-xl shrink-0 shadow-inner">
+        <button
+          type="button"
+          onClick={() => setMobileTab('controls')}
+          className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${mobileTab === 'controls' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:text-slate-900'}`}
+        >
+          <span>🎮</span> Driver Controls {onTrip && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab('map')}
+          className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${mobileTab === 'map' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:text-slate-900'}`}
+        >
+          <span>🗺️</span> Live Navigation Map
+        </button>
+      </div>
+
+      {/* Driver Controls Sidebar */}
+      <aside className={`card overflow-y-auto space-y-4 ${mobileTab === 'controls' ? 'flex-1' : 'hidden md:block'}`}>
+        <div>
+          <h2 className="text-lg font-bold mb-1">Driver Dashboard</h2>
+          <div className="text-xs text-slate-500">
+            Status: {connected ? <span className="text-emerald-600 font-semibold">Connected</span> : <span className="text-rose-600 font-semibold">Disconnected</span>}
+          </div>
         </div>
 
-        {/* Dedicated Assigned Bus & Route Card */}
-        <div className="mb-4 p-3.5 bg-gradient-to-br from-indigo-50/90 to-slate-50 border border-indigo-200/80 rounded-xl shadow-xs">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-100/70 px-2 py-0.5 rounded">
-              Your Assigned Bus
+        <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+          <label className="label">Assigned Bus</label>
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-slate-800 text-sm">
+              {selectedBus?.busNumber || (user ? `${user.name}` : 'Loading...')}
             </span>
             <span className={`badge badge-${onTrip ? 'active' : 'idle'}`}>
-              {onTrip ? 'On Trip' : 'Idle'}
+              {onTrip ? 'On Trip' : 'Available'}
             </span>
-          </div>
-          <div className="text-base font-bold text-slate-900">
-            {selectedBus?.busNumber || 'Assigned Bus'}
           </div>
           <div className="text-xs text-slate-600 mt-1 flex items-center gap-1.5">
             <span className="text-indigo-600">📍</span>
@@ -281,14 +300,20 @@ export default function DriverDashboard() {
           {!onTrip ? (
             <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={() => startTrip(false)}
+                onClick={() => {
+                  startTrip(false);
+                  setMobileTab('map');
+                }}
                 className="btn btn-primary py-2.5 flex flex-col items-center justify-center text-center"
               >
                 <span className="font-bold text-sm">Start Trip</span>
                 <span className="text-[11px] opacity-80 truncate max-w-full px-1">{originTown} to College</span>
               </button>
               <button
-                onClick={() => startTrip(true)}
+                onClick={() => {
+                  startTrip(true);
+                  setMobileTab('map');
+                }}
                 className="btn bg-amber-600 hover:bg-amber-700 text-white py-2.5 flex flex-col items-center justify-center text-center shadow-sm"
               >
                 <span className="font-bold text-sm flex items-center gap-1">
@@ -324,7 +349,38 @@ export default function DriverDashboard() {
         )}
       </aside>
 
-      <section className="card p-0 overflow-hidden">
+      {/* Map Section */}
+      <section className={`card p-0 overflow-hidden relative ${mobileTab === 'map' ? 'flex-1 min-h-[400px]' : 'hidden md:block'}`}>
+        {/* Mobile floating quick actions over map */}
+        {onTrip && (
+          <div className="md:hidden absolute top-2.5 left-2.5 right-14 z-[999] pointer-events-auto">
+            <div className="bg-white/95 backdrop-blur-md p-2 rounded-xl shadow-lg border border-slate-200/80 flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <div className="font-bold text-xs text-slate-800 truncate">{selectedBus?.busNumber}</div>
+                <div className="text-[10px] text-emerald-700 font-semibold truncate">
+                  {isReturn ? `🔄 To ${originTown}` : `🟢 To College`}
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={flagDelay}
+                  className="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-[10px] font-bold rounded-md"
+                >
+                  Flag Delay
+                </button>
+                <button
+                  type="button"
+                  onClick={endTrip}
+                  className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-bold rounded-md"
+                >
+                  End
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <MapComponent
           center={pos ? [pos.lat, pos.lng] : (selectedRoute?.stops?.[0] ? [selectedRoute.stops[0].lat, selectedRoute.stops[0].lng] : [10.8971, 76.1124])}
           stops={selectedRoute?.stops || []}

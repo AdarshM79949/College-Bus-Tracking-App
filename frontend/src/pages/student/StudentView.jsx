@@ -129,6 +129,7 @@ export default function StudentView() {
   const [selectedRouteId, setSelectedRouteId] = useState('');
   const [liveBuses, setLiveBuses] = useState({}); // busId -> payload
   const [tableFilter, setTableFilter] = useState('both'); // 'both' | 'outbound' | 'return'
+  const [mobileTab, setMobileTab] = useState('map'); // 'map' | 'stations'
   const { socket, connected } = useSocket();
 
   useEffect(() => {
@@ -236,8 +237,27 @@ export default function StudentView() {
     : [10.8971, 76.1124];
 
   return (
-    <div className="p-4 grid grid-cols-1 md:grid-cols-[400px_1fr] gap-4 h-[calc(100vh-56px)]">
-      <aside className="card overflow-y-auto space-y-4">
+    <div className="p-2 md:p-4 flex flex-col md:grid md:grid-cols-[400px_1fr] gap-3 md:gap-4 h-[calc(100vh-56px)]">
+      {/* Mobile Top View Switcher */}
+      <div className="md:hidden flex bg-slate-200/90 backdrop-blur-md p-1 rounded-xl shrink-0 shadow-inner">
+        <button
+          type="button"
+          onClick={() => setMobileTab('map')}
+          className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${mobileTab === 'map' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:text-slate-900'}`}
+        >
+          <span>🗺️</span> Live Map View
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileTab('stations')}
+          className={`flex-1 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition ${mobileTab === 'stations' ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-700 hover:text-slate-900'}`}
+        >
+          <span>📋</span> Stations & Tables
+        </button>
+      </div>
+
+      {/* Sidebar: Visible on desktop, on mobile only when 'stations' tab is selected */}
+      <aside className={`card overflow-y-auto space-y-4 ${mobileTab === 'stations' ? 'flex-1' : 'hidden md:block'}`}>
         <div>
           <h2 className="text-lg font-bold mb-1 text-slate-800">Your Route</h2>
           <label className="label">Select route</label>
@@ -325,7 +345,28 @@ export default function StudentView() {
         )}
       </aside>
 
-      <section className="card p-0 overflow-hidden">
+      {/* Map Section: Always visible on desktop, on mobile only when 'map' tab is selected */}
+      <section className={`card p-0 overflow-hidden relative ${mobileTab === 'map' ? 'flex-1 min-h-[400px]' : 'hidden md:block'}`}>
+        {/* Floating Quick Route Card on Mobile */}
+        <div className="md:hidden absolute top-2.5 left-2.5 right-14 z-[999] pointer-events-auto">
+          <div className="bg-white/95 backdrop-blur-md p-2 rounded-xl shadow-lg border border-slate-200/80 flex items-center justify-between gap-2">
+            <select
+              className="w-full text-xs font-bold py-1 px-2 border border-slate-300 rounded-lg bg-white text-slate-800"
+              value={selectedRouteId}
+              onChange={(e) => setSelectedRouteId(e.target.value)}
+            >
+              {routes.map((r) => (
+                <option key={r._id} value={r._id}>{r.name}</option>
+              ))}
+            </select>
+            {primaryBus && (
+              <span className={`badge shrink-0 text-[10px] ${primaryBus.status === 'active' ? 'badge-active' : 'badge-idle'}`}>
+                {primaryBus.status || 'idle'}
+              </span>
+            )}
+          </div>
+        </div>
+
         <MapComponent
           center={mapCenter}
           stops={selectedRoute?.stops || []}
