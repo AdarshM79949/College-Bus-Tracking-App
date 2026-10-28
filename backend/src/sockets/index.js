@@ -38,11 +38,14 @@ function registerSocketHandlers(io) {
     });
 
     // Driver-only events
-    socket.on('trip:start', async ({ busId } = {}, ack) => {
+    socket.on('trip:start', async ({ busId, isReturn } = {}, ack) => {
       try {
         if (socket.user.role !== 'driver') throw new Error('Driver only');
         const bus = await Bus.findById(busId);
         if (!bus) throw new Error('Bus not found');
+        if (bus.driverId && bus.driverId.toString() !== socket.user.id) {
+          throw new Error('You are only authorized to operate your assigned bus');
+        }
         const trip = await Trip.create({
           busId: bus._id,
           routeId: bus.routeId,
@@ -53,9 +56,10 @@ function registerSocketHandlers(io) {
         socket.data.activeTripId = trip._id;
         socket.data.activeBusId = bus._id.toString();
         socket.data.activeRouteId = bus.routeId.toString();
+        socket.data.isReturn = Boolean(isReturn);
         socket.join(`bus:${bus._id}`);
-        io.to(`route:${bus.routeId}`).emit('bus:status', { busId: bus._id, status: 'active' });
-        io.to('admin:all').emit('bus:status', { busId: bus._id, status: 'active' });
+        io.to(`route:${bus.routeId}`).emit('bus:status', { busId: bus._id, status: 'active', isReturn: Boolean(isReturn) });
+        io.to('admin:all').emit('bus:status', { busId: bus._id, status: 'active', isReturn: Boolean(isReturn) });
         if (ack) ack({ ok: true, tripId: trip._id });
       } catch (err) {
         if (ack) ack({ ok: false, message: err.message });
@@ -67,6 +71,9 @@ function registerSocketHandlers(io) {
         if (socket.user.role !== 'driver') throw new Error('Driver only');
         const bus = await Bus.findById(busId);
         if (!bus) throw new Error('Bus not found');
+        if (bus.driverId && bus.driverId.toString() !== socket.user.id) {
+          throw new Error('You are only authorized to operate your assigned bus');
+        }
         const tripId = socket.data.activeTripId;
         if (tripId) {
           await Trip.findByIdAndUpdate(tripId, { endedAt: new Date() });
@@ -76,18 +83,20 @@ function registerSocketHandlers(io) {
         io.to(`route:${bus.routeId}`).emit('bus:status', { busId: bus._id, status: 'idle' });
         io.to('admin:all').emit('bus:status', { busId: bus._id, status: 'idle' });
         socket.data.activeTripId = null;
+        socket.data.isReturn = false;
         if (ack) ack({ ok: true });
       } catch (err) {
         if (ack) ack({ ok: false, message: err.message });
       }
     });
 
-    socket.on('location:update', async ({ busId, lat, lng, speed } = {}) => {
+    socket.on('location:update', async ({ busId, lat, lng, speed, isReturn } = {}) => {
       try {
         if (socket.user.role !== 'driver') return;
         if (typeof lat !== 'number' || typeof lng !== 'number') return;
         const bus = await Bus.findById(busId);
         if (!bus) return;
+        if (bus.driverId && bus.driverId.toString() !== socket.user.id) return;
 
         const now = new Date();
         const prevTs = bus.currentLocation && bus.currentLocation.updatedAt;
@@ -113,10 +122,18 @@ function registerSocketHandlers(io) {
           );
         }
 
-        // Compute ETAs
+        const currentIsReturn = isReturn !== undefined ? Boolean(isReturn) : Boolean(socket.data.isReturn);
+        socket.data.isReturn = currentIsReturn;
+
+        // Compute ETAs - if return trip, evaluate in reverse stop order
         const route = await Route.findById(bus.routeId);
+        let stopsToUse = [];
+        if (route && Array.isArray(route.stops)) {
+          const sorted = [...route.stops].sort((a, b) => a.order - b.order);
+          stopsToUse = currentIsReturn ? [...sorted].reverse() : sorted;
+        }
         const etas = route
-          ? computeEtas({ lat, lng }, route.stops, config.avgBusSpeedKmh)
+          ? computeEtas({ lat, lng }, stopsToUse, config.avgBusSpeedKmh)
           : [];
 
         const payload = {
@@ -127,6 +144,7 @@ function registerSocketHandlers(io) {
           lng,
           speed: speed || 0,
           status: bus.status,
+          isReturn: currentIsReturn,
           etas,
           ts: now,
         };

@@ -13,6 +13,13 @@ html, body, #root { height: 100%; }
 .badge-idle   { @apply bg-slate-200 text-slate-700; }
 .badge-delayed{ @apply bg-rose-100 text-rose-800; }
 
+.bus-marker {
+  transition: transform 0.9s linear, all 0.9s linear;
+}
+.leaflet-marker-icon {
+  transition: transform 0.9s linear;
+}
+
 .btn {
   @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium shadow-sm transition;
 }

@@ -1,6 +1,6 @@
-# Campus Bus Tracking System
+# College Bus Tracking App
 
-A full-stack **real-time campus bus tracking** application. Students see **live bus positions** and **per-stop ETAs** on a map, **drivers** stream **GPS or simulated** movement along a route and can **flag delays**, and **admins** manage **routes, buses, and users** and use a **live monitor** of all active buses. The stack is **MERN** (MongoDB, Express, React, Node) with **Socket.IO** for bidirectional live updates and **JWT**-based auth for both HTTP and WebSocket connections.
+A full-stack **real-time college bus tracking** application for **MGM College of Engineering and Pharmaceutical Sciences, Valanchery**. Students see **live bus positions**, **two-way station tables** (Starting Point to College & College to Starting Point), and **per-stop ETAs** along real road networks on a map. Drivers stream **GPS or simulated** movement along road polylines and flag delays, while admins monitor the active fleet in real-time. Built with **MERN** (MongoDB, Express, React, Node.js) + **Socket.IO** + **Leaflet**, with an optional **Spring Boot Java backend** and ready-to-deploy setups for **Render** and **Vercel**.
 
 ---
 
@@ -229,6 +229,45 @@ For Socket.IO with **multiple** Node processes, use a **sticky session** load ba
 | [docs/HLD.md](docs/HLD.md) | High-level design and diagrams (plus root PNGs) |
 | [docs/API.md](docs/API.md) | REST + Socket contracts |
 | [docs/DEMO.md](docs/DEMO.md) | Live demo script and test commands |
+
+---
+
+## Cloud Deployment Guide (Render & Vercel)
+
+### Part 1: Deploy Backend on Render (Web Service)
+
+1. Sign up/log in at [render.com](https://render.com).
+2. Click **New +** > **Web Service**.
+3. Connect your GitHub repository (`College-Bus-Tracking-App`).
+4. Configure service settings:
+   - **Root Directory**: `backend`
+   - **Environment**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Instance Type**: `Free`
+5. Under **Environment Variables**, set:
+   - `NODE_ENV`: `production`
+   - `CLIENT_ORIGIN`: `*` (or your Vercel domain e.g. `https://your-app.vercel.app`)
+   - `JWT_SECRET`: *(Click 'Generate' or enter a secure 32+ char secret)*
+   - `MONGO_URI`: *(Optional: MongoDB Atlas connection string. If omitted, it will automatically use the built-in in-memory database for zero-config demo!)*
+6. Click **Create Web Service**.
+7. Once deployed, copy your backend URL (e.g. `https://college-bus-backend.onrender.com`).
+
+---
+
+### Part 2: Deploy Frontend on Vercel
+
+1. Sign up/log in at [vercel.com](https://vercel.com).
+2. Click **Add New...** > **Project**.
+3. Import your GitHub repository.
+4. Configure project settings:
+   - **Framework Preset**: `Vite`
+   - **Root Directory**: Click edit and select `frontend`
+5. Expand **Environment Variables**:
+   - Key: `VITE_API_BASE`
+   - Value: `https://your-backend-name.onrender.com` *(Paste your Render backend URL from Part 1 with no trailing slash)*
+6. Click **Deploy**.
+7. Vercel automatically deploys with SPA client-side routing via [`frontend/vercel.json`](file:///e:/Campus-Bus-Tracking-System/frontend/vercel.json). Open your live `.vercel.app` URL!
 
 ---
 

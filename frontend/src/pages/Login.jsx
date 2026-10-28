@@ -31,27 +31,51 @@ export default function Login() {
   return (
     <div className="min-h-[calc(100vh-56px)] flex items-center justify-center p-4">
       <div className="card w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-1">{mode === 'login' ? 'Sign in' : 'Create account'}</h1>
+        <h1 className="text-2xl font-bold mb-1">
+          {mode === 'login' ? 'Sign in' : 'Create account'}
+        </h1>
         <p className="text-sm text-slate-500 mb-6">
-          {mode === 'login' ? 'Welcome back to Campus Bus Tracker.' : 'New students can register here.'}
+          {mode === 'login'
+            ? 'Welcome back to College Bus Tracking App.'
+            : 'New students can register here.'}
         </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           {mode === 'register' && (
             <div>
-              <label className="label">Name</label>
-              <input className="input" required value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <label className="label">Full Name</label>
+              <input
+                className="input"
+                required
+                value={form.name}
+                placeholder="e.g. Aalim Zayan"
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
             </div>
           )}
           <div>
-            <label className="label">Email</label>
-            <input className="input" type="email" required value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            <label className="label">
+              {mode === 'login' ? 'Email or Driver Username' : 'Student Email'}
+            </label>
+            <input
+              className="input"
+              type="email"
+              required
+              value={form.email}
+              placeholder={mode === 'login' ? 'e.g. PMNA BUS MGM or pmnabus@mgm.ac.in' : 'e.g. student@mgm.ac.in'}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+            />
           </div>
           <div>
             <label className="label">Password</label>
-            <input className="input" type="password" required minLength={6} value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            <input
+              className="input"
+              type="password"
+              required
+              minLength={6}
+              value={form.password}
+              placeholder={mode === 'register' ? 'Min. 6 characters' : '••••••••'}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+            />
           </div>
           <button disabled={loading} className="btn btn-primary w-full">
             {loading ? 'Please wait...' : mode === 'login' ? 'Sign in' : 'Register'}
@@ -68,11 +92,18 @@ export default function Login() {
             </button>
           )}
         </div>
-        <div className="mt-6 text-xs text-slate-500 border-t pt-4">
-          <div className="font-semibold mb-1">Demo accounts (after seeding):</div>
-          <div>admin@campus.edu / admin123</div>
-          <div>driver@campus.edu / driver123</div>
-          <div>student@campus.edu / student123</div>
+        <div className="mt-6 text-xs text-slate-500 border-t pt-4 space-y-1">
+          <div className="font-semibold text-slate-700 mb-1">MGM College Demo Accounts:</div>
+          <div><span className="font-semibold text-slate-600">Drivers (Password: driver123):</span></div>
+          <div className="pl-2 font-mono text-[11px] text-slate-600 grid grid-cols-2 gap-1">
+            <span>• PMNA BUS MGM</span>
+            <span>• EDAPPAL BUS MGM</span>
+            <span>• TIRUR BUS MGM</span>
+            <span>• KOTTAKKAL BUS MGM</span>
+            <span>• KUTTIPPURAM BUS MGM</span>
+          </div>
+          <div className="pt-1"><span className="font-semibold text-slate-600">Admin:</span> <span className="font-mono">admin@mgm.ac.in</span> / <span className="font-mono">admin123</span></div>
+          <div><span className="font-semibold text-slate-600">Student:</span> <span className="font-mono">student@mgm.ac.in</span> / <span className="font-mono">student123</span></div>
         </div>
       </div>
     </div>

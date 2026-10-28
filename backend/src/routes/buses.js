@@ -8,7 +8,10 @@ router.get('/', auth, async (req, res, next) => {
   try {
     const filter = {};
     if (req.query.routeId) filter.routeId = req.query.routeId;
-    const buses = await Bus.find(filter).populate('routeId', 'name').populate('driverId', 'name email');
+    if (req.user && req.user.role === 'driver') {
+      filter.driverId = req.user.id;
+    }
+    const buses = await Bus.find(filter).populate('routeId').populate('driverId', 'name email');
     res.json({ buses });
   } catch (err) { next(err); }
 });

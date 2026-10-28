@@ -10,8 +10,11 @@ const tripRoutes = require('./routes/trips');
 
 function createApp() {
   const app = express();
+  const corsOrigin = (!config.clientOrigin || config.clientOrigin === '*')
+    ? true
+    : [config.clientOrigin, 'http://localhost:5173', 'http://localhost:3000', /\.vercel\.app$/];
 
-  app.use(cors({ origin: config.clientOrigin, credentials: true }));
+  app.use(cors({ origin: corsOrigin, credentials: true }));
   app.use(express.json());
 
   app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));

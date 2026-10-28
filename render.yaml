@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: campus-bus-backend
+    env: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_ORIGIN
+        value: "*"
+      - key: JWT_SECRET
+        generateValue: true

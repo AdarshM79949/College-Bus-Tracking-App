@@ -6,7 +6,10 @@ export default function Navbar() {
   const navigate = useNavigate();
   return (
     <nav className="bg-indigo-700 text-white px-4 py-3 flex items-center justify-between shadow">
-      <Link to="/" className="font-bold text-lg">Campus Bus Tracker</Link>
+      <Link to="/" className="font-bold text-lg flex items-center gap-2">
+        <span>🚌</span>
+        <span>College Bus Tracking App</span>
+      </Link>
       <div className="flex items-center gap-4 text-sm">
         {user ? (
           <>
