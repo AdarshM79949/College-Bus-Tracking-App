@@ -92,19 +92,6 @@ export default function Login() {
             </button>
           )}
         </div>
-        <div className="mt-6 text-xs text-slate-500 border-t pt-4 space-y-1">
-          <div className="font-semibold text-slate-700 mb-1">MGM College Demo Accounts:</div>
-          <div><span className="font-semibold text-slate-600">Drivers (Password: driver123):</span></div>
-          <div className="pl-2 font-mono text-[11px] text-slate-600 grid grid-cols-2 gap-1">
-            <span>• PMNA BUS MGM</span>
-            <span>• EDAPPAL BUS MGM</span>
-            <span>• TIRUR BUS MGM</span>
-            <span>• KOTTAKKAL BUS MGM</span>
-            <span>• KUTTIPPURAM BUS MGM</span>
-          </div>
-          <div className="pt-1"><span className="font-semibold text-slate-600">Admin:</span> <span className="font-mono">admin@mgm.ac.in</span> / <span className="font-mono">admin123</span></div>
-          <div><span className="font-semibold text-slate-600">Student:</span> <span className="font-mono">student@mgm.ac.in</span> / <span className="font-mono">student123</span></div>
-        </div>
       </div>
     </div>
   );
