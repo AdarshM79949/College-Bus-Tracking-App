@@ -22,6 +22,11 @@ public class DatabaseConnection {
     private static final String MYSQL_USER = "root";
     private static final String MYSQL_PASSWORD = "password";
 
+    // Supabase Cloud PostgreSQL Configuration (AWS US-East-1)
+    private static final String SUPABASE_URL = "jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require";
+    private static final String SUPABASE_USER = "postgres.xndfubyzzyoswcykhhyn";
+    private static final String SUPABASE_PASSWORD = "9qwitJHcBgX8hgDp";
+
     /**
      * Get a direct JDBC Connection to the H2 database.
      */
@@ -34,6 +39,13 @@ public class DatabaseConnection {
      */
     public static Connection getMySQLConnection() throws SQLException {
         return DriverManager.getConnection(MYSQL_URL, MYSQL_USER, MYSQL_PASSWORD);
+    }
+
+    /**
+     * Get a direct JDBC Connection to Supabase Cloud PostgreSQL.
+     */
+    public static Connection getSupabaseConnection() throws SQLException {
+        return DriverManager.getConnection(SUPABASE_URL, SUPABASE_USER, SUPABASE_PASSWORD);
     }
 
     /**
