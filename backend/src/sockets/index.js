@@ -40,10 +40,10 @@ function registerSocketHandlers(io) {
     // Driver-only events
     socket.on('trip:start', async ({ busId, isReturn } = {}, ack) => {
       try {
-        if (socket.user.role !== 'driver') throw new Error('Driver only');
+        if (socket.user.role !== 'driver' && socket.user.role !== 'admin') throw new Error('Driver or Admin only');
         const bus = await Bus.findById(busId);
         if (!bus) throw new Error('Bus not found');
-        if (bus.driverId && bus.driverId.toString() !== socket.user.id) {
+        if (socket.user.role !== 'admin' && bus.driverId && bus.driverId.toString() !== socket.user.id) {
           throw new Error('You are only authorized to operate your assigned bus');
         }
         const trip = await Trip.create({
@@ -71,10 +71,10 @@ function registerSocketHandlers(io) {
 
     socket.on('trip:end', async ({ busId } = {}, ack) => {
       try {
-        if (socket.user.role !== 'driver') throw new Error('Driver only');
+        if (socket.user.role !== 'driver' && socket.user.role !== 'admin') throw new Error('Driver or Admin only');
         const bus = await Bus.findById(busId);
         if (!bus) throw new Error('Bus not found');
-        if (bus.driverId && bus.driverId.toString() !== socket.user.id) {
+        if (socket.user.role !== 'admin' && bus.driverId && bus.driverId.toString() !== socket.user.id) {
           throw new Error('You are only authorized to operate your assigned bus');
         }
         const tripId = socket.data.activeTripId;
@@ -96,11 +96,11 @@ function registerSocketHandlers(io) {
 
     socket.on('location:update', async ({ busId, lat, lng, speed, isReturn } = {}) => {
       try {
-        if (socket.user.role !== 'driver') return;
+        if (socket.user.role !== 'driver' && socket.user.role !== 'admin') return;
         if (typeof lat !== 'number' || typeof lng !== 'number') return;
         const bus = await Bus.findById(busId);
         if (!bus) return;
-        if (bus.driverId && bus.driverId.toString() !== socket.user.id) return;
+        if (socket.user.role !== 'admin' && bus.driverId && bus.driverId.toString() !== socket.user.id) return;
 
         const now = new Date();
         const prevTs = bus.currentLocation && bus.currentLocation.updatedAt;
@@ -163,7 +163,7 @@ function registerSocketHandlers(io) {
 
     socket.on('status:delay', async ({ busId, reason } = {}) => {
       try {
-        if (socket.user.role !== 'driver') return;
+        if (socket.user.role !== 'driver' && socket.user.role !== 'admin') return;
         const bus = await Bus.findById(busId);
         if (!bus) return;
         bus.status = 'delayed';

@@ -152,8 +152,27 @@ function MapController({ center, stops = [] }) {
   return null;
 }
 
-function MapControls({ stops = [], activeBus = null }) {
+function MapControls({ stops = [], activeBus = null, showMyLocation = false, onMyLocationClick }) {
   const map = useMap();
+
+  const handleMyLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        map.setView([lat, lng], Math.max(map.getZoom(), 15), { animate: true });
+        if (onMyLocationClick) onMyLocationClick({ lat, lng, accuracy: pos.coords.accuracy });
+      },
+      (err) => {
+        alert(`Unable to get your location: ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   return (
     <div className="leaflet-top leaflet-right" style={{ marginTop: '10px', marginRight: '10px', zIndex: 1000 }}>
@@ -186,6 +205,17 @@ function MapControls({ stops = [], activeBus = null }) {
             <span className="animate-spin text-sm">🚌</span> Center Bus
           </button>
         )}
+
+        {showMyLocation && (
+          <button
+            type="button"
+            onClick={handleMyLocation}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3 py-2 rounded-lg shadow-md transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95"
+            title="Show my current GPS location"
+          >
+            <span>📍</span> My Location
+          </button>
+        )}
       </div>
     </div>
   );
@@ -205,7 +235,7 @@ export default function MapComponent({ center = [10.8971, 76.1124], zoom = 13, s
   return (
     <MapContainer center={center} zoom={zoom} className="rounded-xl overflow-hidden h-full w-full">
       <MapController center={center} stops={stops} />
-      <MapControls stops={stops} activeBus={activeBus} />
+      <MapControls stops={stops} activeBus={activeBus} showMyLocation={true} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
