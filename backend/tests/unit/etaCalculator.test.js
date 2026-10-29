@@ -53,5 +53,14 @@ describe('etaCalculator', () => {
     test('handles empty stops', () => {
       expect(computeEtas({ lat: 0, lng: 0 }, [], 30)).toEqual([]);
     });
+
+    test('computes ETAs for return trip with reversed stops', () => {
+      const reversedStops = [...stops].reverse(); // C -> B -> A
+      // When at B on return trip, remaining stops should be [B, A]
+      const result = computeEtas({ lat: 0, lng: 1 }, reversedStops, 111);
+      expect(result).toHaveLength(2);
+      expect(result[0].stopName).toBe('B');
+      expect(result[1].stopName).toBe('A');
+    });
   });
 });

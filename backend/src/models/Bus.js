@@ -10,6 +10,10 @@ const busSchema = new mongoose.Schema(
       enum: ['idle', 'active', 'delayed'],
       default: 'idle',
     },
+    isReturn: {
+      type: Boolean,
+      default: false,
+    },
     currentLocation: {
       lat: Number,
       lng: Number,

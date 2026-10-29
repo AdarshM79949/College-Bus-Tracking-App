@@ -147,7 +147,7 @@ export default function StudentView() {
               lat: bus.currentLocation.lat,
               lng: bus.currentLocation.lng,
               status: bus.status,
-              isReturn: false,
+              isReturn: Boolean(bus.isReturn),
               etas: [],
             };
           }

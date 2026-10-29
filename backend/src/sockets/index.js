@@ -52,6 +52,9 @@ function registerSocketHandlers(io) {
           driverId: socket.user.id,
         });
         bus.status = 'active';
+        bus.isReturn = Boolean(isReturn);
+
+
         await bus.save();
         socket.data.activeTripId = trip._id;
         socket.data.activeBusId = bus._id.toString();
@@ -79,6 +82,7 @@ function registerSocketHandlers(io) {
           await Trip.findByIdAndUpdate(tripId, { endedAt: new Date() });
         }
         bus.status = 'idle';
+        bus.isReturn = false;
         await bus.save();
         io.to(`route:${bus.routeId}`).emit('bus:status', { busId: bus._id, status: 'idle' });
         io.to('admin:all').emit('bus:status', { busId: bus._id, status: 'idle' });
@@ -124,6 +128,8 @@ function registerSocketHandlers(io) {
 
         const currentIsReturn = isReturn !== undefined ? Boolean(isReturn) : Boolean(socket.data.isReturn);
         socket.data.isReturn = currentIsReturn;
+        bus.isReturn = currentIsReturn;
+        await bus.save();
 
         // Compute ETAs - if return trip, evaluate in reverse stop order
         const route = await Route.findById(bus.routeId);

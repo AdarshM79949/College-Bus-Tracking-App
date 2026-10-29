@@ -35,12 +35,13 @@ function etaSeconds(distanceKm, speedKmh) {
  */
 function computeEtas(current, stops, speedKmh) {
   if (!current || !Array.isArray(stops) || stops.length === 0) return [];
-  const sorted = [...stops].sort((a, b) => a.order - b.order);
+  // Retain the ordered sequence of stops provided by caller (preserves forward or reverse progression)
+  const sequence = [...stops];
 
   // Find the nearest stop; assume stops after it are "remaining".
   let nearestIdx = 0;
   let nearestDist = Infinity;
-  sorted.forEach((s, i) => {
+  sequence.forEach((s, i) => {
     const d = haversineKm(current, s);
     if (d < nearestDist) {
       nearestDist = d;
@@ -48,7 +49,7 @@ function computeEtas(current, stops, speedKmh) {
     }
   });
 
-  const remaining = sorted.slice(nearestIdx);
+  const remaining = sequence.slice(nearestIdx);
   const result = [];
   let prev = current;
   let cumulativeKm = 0;
